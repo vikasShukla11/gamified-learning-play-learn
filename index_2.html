@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Welcome Learners — Gamified Learning</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+   
+.quiz-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+    /* ---------- Reset ---------- */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html,body { height: 100%; }
+    :root{
+      --red:#e50914; --red-dark:#c20712; --accent:#38b6ff; --glass: rgba(255,255,255,.04);
+      --bg0:#000; --bg1:#001a33; --bg2:#013a63;
+    }
+
+    body{
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color: #eaf6ff; min-height:100vh; background: linear-gradient(120deg,var(--bg0) 0%, var(--bg1) 40%, var(--bg2) 100%);
+      background-size: 300% 300%; animation: bgShift 12s ease-in-out infinite; -webkit-font-smoothing:antialiased;
+      padding: 18px;
+    }
+    @keyframes bgShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+    /* faint glow overlay */
+    body::after{
+      content:""; position: fixed; inset: 0; pointer-events:none;
+      background: radial-gradient(600px 300px at 10% 20%, rgba(56,182,255,.04), transparent 10%), radial-gradient(500px 250px at 90% 80%, rgba(0,120,255,0.03), transparent 10%);
+      mix-blend-mode: screen; z-index:0;
+    }
+
+    /* container */
+    .page {
+      position: relative; z-index: 2; max-width:1200px; margin: 18px auto;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius: 18px; padding: 26px; box-shadow: 0 30px 70px rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    /* Top row */
+    .top-row { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
+    .back-btn { background:transparent; border:1px solid rgba(255,255,255,0.08); color: #fff; padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:700; }
+    .back-btn:hover{ transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.45); }
+
+    /* Title box */
+    .title-box {
+      margin: 8px auto 14px;
+      padding: 14px 26px;
+      border-radius: 28px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      min-height:68px; max-width: 100%;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.55);
+    }
+    .title-box h1 { font-size: 2.6rem; color:#fff; font-weight:900; margin:0; letter-spacing:-1px; }
+    .title-box .meta { text-align:right; font-size:0.95rem; color: rgba(255,255,255,0.9); }
+
+    /* subtitle/quote */
+    .quote { margin-top:10px; color: rgba(255,255,255,0.88); font-size:1.05rem; line-height:1.45; text-align:center; margin-bottom:12px; }
+    .quote .author { display:block; margin-top:6px; color: rgba(167,240,255,0.95); font-weight:700; }
+
+    /* controls */
+    .controls { display:flex; gap:12px; align-items:center; justify-content:center; margin:14px 0 20px; flex-wrap:wrap; }
+    select, .btn { appearance:none; -webkit-appearance:none; outline:none; }
+    .select {
+      padding:10px 14px; background: rgba(255,255,255,0.02); color:#eefcff; border-radius:10px; border:1px solid rgba(255,255,255,0.03);
+      font-weight:700; cursor:pointer;
+    }
+
+    .actions { display:flex; gap:10px; align-items:center; }
+
+    .branch-list { display:flex; gap:12px; justify-content:center; margin-top:12px; flex-wrap:wrap; }
+    .branch {
+      padding:12px 18px; border-radius:12px; background: linear-gradient(90deg,var(--accent), rgba(233,9,20,0.85));
+      color:#fff; font-weight:800; cursor:pointer; box-shadow: 0 8px 28px rgba(0,0,0,0.45); transition: transform .22s;
+    }
+    .branch.small{ padding:10px 14px; font-size:0.92rem; }
+
+    .branch:hover { transform: translateY(-6px); }
+
+    /* panel area for questions/puzzles/learning */
+    .panel { margin-top:22px; padding:18px; border-radius:12px; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03); min-height:160px; }
+
+    /* animated reveal */
+    .slide { max-height:0; overflow:hidden; transition: max-height .42s cubic-bezier(.2,.9,.2,1), opacity .28s; opacity:0; }
+    .slide.open { max-height:1600px; opacity:1; }
+
+    /* question list */
+    .qa { margin-top:12px; display:flex; flex-direction:column; gap:12px; }
+    .qcard { padding:14px; border-radius:12px; background: linear-gradient(160deg, rgba(0,120,255,0.04), rgba(233,9,20,0.03)); box-shadow: 0 8px 26px rgba(0,0,0,0.45); }
+    .qtext { font-weight:800; margin-bottom:8px; color:#fff; }
+    .options { display:flex; gap:10px; flex-wrap:wrap; }
+    .opt { padding:8px 12px; border-radius:10px; background: rgba(255,255,255,0.02); cursor:pointer; font-weight:700; border:1px solid rgba(255,255,255,0.03); transition: transform .12s; }
+    .opt:hover { transform: translateY(-4px); }
+    .opt.correct { background: rgba(56,182,255,0.14); border-color: rgba(56,182,255,0.28); }
+    .opt.wrong { background: rgba(233,9,20,0.12); border-color: rgba(233,9,20,0.28); }
+
+    /* score footer */
+    .result { margin-top:14px; padding:12px; border-radius:10px; background: linear-gradient(90deg, rgba(0,0,0,0.2), rgba(255,255,255,0.02)); display:flex; gap:12px; align-items:center; justify-content:space-between; }
+    .coins { font-weight:900; color:#a7f0ff; font-size:1.15rem; }
+
+    /* Refresh button */
+    .small { padding:8px 10px; font-size:0.95rem; }
+
+    /* left puzzle floating button */
+    .left-puzzle {
+      position: fixed; left: 18px; top: 120px; z-index:1400;
+    }
+    .left-puzzle .pbtn { background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04); padding:10px 12px; border-radius:10px; color:#fff; font-weight:800; cursor:pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+    .left-puzzle .pbtn:hover { transform: translateY(-6px); }
+
+    /* puzzle panel */
+    .puzzle-panel { position: fixed; left: 18px; top: 170px; width:320px; max-width: 86vw; z-index:1400; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px; padding: 12px; border:1px solid rgba(255,255,255,0.04); box-shadow: 0 30px 70px rgba(0,0,0,0.6); display:none; }
+    .puzzle-panel.open { display:block; animation: pop .18s ease; }
+    @keyframes pop { from{ transform: translateY(-8px) scale(.99); opacity:0 } to{ transform:none; opacity:1 } }
+    .puzzle-item { padding:10px; border-radius:10px; background: linear-gradient(160deg, rgba(0,120,255,0.03), rgba(233,9,20,0.03)); margin-bottom:10px; cursor:pointer; font-weight:700; }
+    .puzzle-item .sol { display:none; margin-top:8px; color:#a7f0ff; font-weight:700; font-size:0.95rem; border-top:1px solid rgba(255,255,255,0.03); padding-top:8px; }
+
+    /* Learning area */
+    .learn-branches { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:10px; }
+    .chapter { padding:10px 12px; border-radius:10px; background: rgba(255,255,255,0.02); cursor:pointer; font-weight:800; }
+
+    /* Paragraph learning */
+    .para-box { padding:14px; border-radius:12px; background: linear-gradient(160deg, rgba(0,120,255,0.03), rgba(255,255,255,0.01)); margin-top:12px; }
+    .paragraph { height: auto; white-space: pre-wrap; color: #e8faff; line-height:1.6; font-size:0.98rem; }
+    .para-questions { margin-top:12px; display:flex; flex-direction:column; gap:10px; }
+
+    /* responsive */
+    @media (max-width:820px) {
+      .title-box h1 { font-size:1.8rem; }
+      .page { padding:14px; }
+      .puzzle-panel { width:84vw; left:8px; top:120px; }
+    }
+
+  </style>
+</head>
+<body>
+  <!-- Quiz Section Button -->
+<!-- Quiz Section & Games Button -->
+<button class="branch small" 
+        style="background: linear-gradient(90deg,var(--accent), rgba(233,9,20,0.85));"
+        onclick="window.open('index_3.html','_blank')">
+  Quiz Section & Games
+</button>
+
+
+  <div class="page" id="page">
+    <div class="top-row">
+      <div style="display:flex; gap:12px; align-items:center;">
+        <button class="back-btn" onclick="history.back()">← Back</button>
+        <div class="title-box" style="min-width:520px; padding:10px 18px;">
+          <h1 style="font-size:28px;">Welcome Learners</h1>
+          <div class="meta" style="margin-left:18px; text-align:right;">
+            <div style="font-size:0.9rem; color:rgba(255,255,255,0.85);">Gamified Classroom</div>
+            <div style="font-size:0.82rem; color:rgba(167,240,255,0.9);">Theme by: You (code author)</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:center;">
+        <div class="coins" id="coins">Coins: 0</div>
+        <button class="btn small" onclick="location.reload()">Full Refresh</button>
+      </div>
+    </div>
+
+    <div class="quote">
+      “Small daily studies make a giant mind.” 
+      <span class="author">— Your Friendly Game Teacher</span>
+    </div>
+
+    <div class="controls">
+      <div>
+        <label style="font-weight:800; color:#dff7ff; margin-right:8px;">Select Class:</label>
+        <select id="classSelect" class="select">
+          <option value="1">Class 1</option><option value="2">Class 2</option><option value="3">Class 3</option>
+          <option value="4">Class 4</option><option value="5">Class 5</option><option value="6">Class 6</option>
+          <option value="7">Class 7</option><option value="8">Class 8</option>
+        </select>
+      </div>
+
+      <div class="actions">
+        <button class="branch small" id="openBranchesBtn">Open Branches</button>
+        <button class="btn small" id="gotoLearning">Learning</button>
+        <button class="btn small" id="gotoParagraph">Paragraph Learning</button>
+      </div>
+    </div>
+
+    <!-- Branch buttons -->
+    <div id="branchArea" class="branch-list slide"></div>
+
+    <!-- questions panel -->
+    <div class="panel">
+      <div id="qaArea" class="slide"></div>
+      <div id="qaResult" class="slide"></div>
+    </div>
+
+    <!-- Learning section -->
+    <div class="panel" style="margin-top:18px;">
+      <h3 style="margin-bottom:10px;">Learning</h3>
+      <div id="learningArea" class="slide">
+        <div style="text-align:center; color:rgba(255,255,255,0.85);">Choose branch below</div>
+        <div class="learn-branches" id="learnBranches"></div>
+        <div id="chapterArea" class="slide"></div>
+        <div id="chapterSummary" class="slide"></div>
+      </div>
+    </div>
+
+    <!-- Paragraph Learning -->
+    <div class="panel" style="margin-top:18px;">
+      <h3 style="margin-bottom:10px;">Paragraph Learning</h3>
+      <div id="paragraphArea" class="slide">
+        <div style="display:flex; gap:12px; align-items:center; justify-content:center; margin-bottom:8px;">
+          <label style="font-weight:800;">Select Class:</label>
+          <select id="paraClass" class="select">
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+            <option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8" selected>8</option>
+          </select>
+        </div>
+
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+          <div class="branch small" data-sub="English" onclick="openParagraph('English')">English</div>
+          <div class="branch small" data-sub="Science" onclick="openParagraph('Science')">Science</div>
+          <div class="branch small" data-sub="Social Science" onclick="openParagraph('Social Science')">Social Science</div>
+          <div class="branch small" data-sub="General Knowledge" onclick="openParagraph('General Knowledge')">General Knowledge</div>
+        </div>
+
+        <div id="paraBox" class="slide" style="margin-top:12px;">
+          <div class="para-box" id="paraContent"></div>
+          <div id="paraQuestions" class="para-questions"></div>
+          <div style="display:flex; gap:10px; justify-content:space-between; margin-top:12px;">
+            <div id="paraTips" style="color:rgba(255,255,255,0.9); font-weight:700;"></div>
+            <div>
+              <button class="btn small" id="paraRefresh">Refresh (3)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- final tips area (hidden until used) -->
+    <div id="finalTips" style="margin-top:18px;"></div>
+  </div>
+
+  <!-- left puzzle button + panel -->
+  <div class="left-puzzle">
+    <div><button class="pbtn" id="togglePuzzle">Puzzle</button></div>
+    <div class="puzzle-panel" id="puzzlePanel" aria-hidden="true">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div style="font-weight:900; color:#cfefff;">Word Puzzles</div>
+        <button class="pbtn" id="closePuzzle">✕</button>
+      </div>
+      <div id="puzzleList"></div>
+    </div>
+  </div>
+
+<script>
+
+
+/* ====== Data ====== */
+/* Example datasets - you can replace these with different questions/paragraphs */
+const QUESTIONS = {
+  "English": [
+    { q:"Choose the correct plural: child", opts:["childs","children","childes","childrens"], a:1 },
+    { q:"Pick the synonym of 'happy'", opts:["sad","angry","joyful","tired"], a:2 },
+    { q:"Select the past of 'go'", opts:["goed","went","gone","going"], a:1 },
+    { q:"Which starts a question?", opts:["Because","Do","And","But"], a:1 },
+    { q:"Choose article: ___ apple", opts:["A","An","The","No"], a:1 }
+  ],
+  "Math": [
+    { q:"5 × 6 = ?", opts:["11","30","56","25"], a:1 },
+    { q:"LCM of 4 and 6", opts:["12","10","6","24"], a:0 },
+    { q:"Square root of 81", opts:["8","9","7","6"], a:1 },
+    { q:"If x=2, 3x+4 = ?", opts:["10","8","14","9"], a:0 },
+    { q:"What is 15% of 200?", opts:["15","20","30","25"], a:2 }
+  ],
+  "Science": [
+    { q:"Water boils at ___ °C", opts:["90","80","100","120"], a:2 },
+    { q:"Which is a gas?", opts:["Iron","Oxygen","Wood","Gold"], a:1 },
+    { q:"Plants make food by ___", opts:["Digestion","Photosynthesis","Respiration","Absorption"], a:1 },
+    { q:"Main gas in air", opts:["Oxygen","Hydrogen","Nitrogen","Carbon dioxide"], a:2 },
+    { q:"Sound needs ____ to travel", opts:["Vacuum","Air","Nothing","Dark"], a:1 }
+  ],
+  "Social Science": [
+    { q:"Capital of India?", opts:["Mumbai","New Delhi","Kolkata","Chennai"], a:1 },
+    { q:"Which is a continent?", opts:["India","Asia","Mumbai","Himalaya"], a:1 },
+    { q:"Primary source of history", opts:["Newspaper","Artifact","Internet","Radio"], a:1 },
+    { q:"Who wrote the Constitution of India (chairman)?", opts:["B.R. Ambedkar","Gandhi","Nehru","Patel"], a:0 },
+    { q:"Which is a river", opts:["Sahara","Amazon","Himalaya","Gobi"], a:1 }
+  ]
+};
+
+const PUZZLES = [
+  { q:"I am taken from a mine and shut in a wooden case, from which I am never released, and yet I am used by almost everybody. What am I?", sol:"Pencil lead (graphite)." },
+  { q:"A man walks 1 mile south, 1 mile east, and 1 mile north and returns to his starting point. Where is he?", sol:"At the North Pole (classic puzzle)." },
+  { q:"I have keys but no locks. I have space but no rooms. You can enter but cannot go outside. What am I?", sol:"A keyboard." },
+  { q:"You see me once in June, twice in November, but not in May. What am I?", sol:"The letter 'e'." },
+  { q:"A basket has 5 apples. You take away 3. How many do you have?", sol:"You have the 3 you took." }
+];
+
+/* Some sample chapters & 80-word summaries (short placeholders) */
+const CHAPTERS = {
+  "English": [
+    {title:"Chapter 1: Stories", summary: "This chapter introduces short stories focusing on characters, settings, and moral lessons. Read key events, learn new verbs and adjectives, and practice comprehension questions to understand the plot and themes."},
+    {title:"Chapter 2: Poems", summary: "Familiarize with rhymes, rhythm and imagery. Learn how poets use metaphors and similes to express feelings and ideas in compact lines."},
+    {title:"Chapter 3: Grammar", summary: "Essential grammar: tenses, parts of speech, and sentence structure. Examples help build clarity in writing."},
+    {title:"Chapter 4: Writing", summary: "Learn paragraph structure, topic sentences, and coherence. Practice small compositions."},
+    {title:"Chapter 5: Comprehension", summary: "Strategies to identify main idea, supporting details, and answer inference questions."}
+  ],
+  "Science": [
+    {title:"Chapter 1: Food", summary:"Food sources, nutrition, and digestion. Students learn about balanced diet, food groups and how nutrients help the body function."},
+    {title:"Chapter 2: Materials", summary:"Properties of materials: wood, metal, plastic, and their uses. Tests like solubility and magnetism explained."},
+    {title:"Chapter 3: Water", summary:"Water cycle, sources of water, importance of clean water and conservation methods."},
+    {title:"Chapter 4: Plants", summary:"Photosynthesis basics, structure, and types of plants along with their adaptations."},
+    {title:"Chapter 5: Energy", summary:"Different forms of energy, renewable vs non-renewable sources and simple experiments."}
+  ],
+  "Math": [
+    {title:"Chapter 1: Numbers", summary:"Place value, operations, prime & composite numbers, and mental math techniques."},
+    {title:"Chapter 2: Fractions", summary:"Addition, subtraction, multiplication, and division of fractions and mixed numbers."},
+    {title:"Chapter 3: Geometry", summary:"Basic shapes, angles, area and perimeter formulas with practical examples."},
+    {title:"Chapter 4: Algebra", summary:"Simple equations, variables, and solving linear expressions with examples."},
+    {title:"Chapter 5: Data", summary:"Graphs, mean, median and mode to analyze small data sets."}
+  ],
+  "Social Science": [
+    {title:"Chapter 1: Our Country", summary:"An overview of states, capitals, and national symbols with emphasis on civic responsibilities."},
+    {title:"Chapter 2: Community", summary:"How communities are organized, local governance, and important public services."},
+    {title:"Chapter 3: Resources", summary:"Natural resources, sustainable use and the importance of conservation."},
+    {title:"Chapter 4: History", summary:"Important historical events and their impact on modern society."},
+    {title:"Chapter 5: Geography", summary:"Landforms, rivers, climates and map reading basics."}
+  ]
+};
+
+/* Paragraph learning sample generator (20 short lines) */
+function generateParagraphLines(subject, cls) {
+  // simple placeholder lines tuned to subject
+  const lines = [];
+  const base = {
+    "English":["story","poem","grammar","vocabulary","reading","comprehension","writing","dialogue","sentence","paragraph"],
+    "Science":["plant","energy","water","experiment","material","cell","system","food","force","oxygen"],
+    "Social Science":["history","map","culture","community","economy","government","heritage","tradition","commerce","borders"],
+    "General Knowledge":["world","news","invention","science","sport","flag","leader","language","tech","planet"]
+  }[subject] || ["topic"];
+  for(let i=0;i<20;i++){
+    const k = base[i%base.length];
+    lines.push(`${i+1}. This short line covers ${k} idea number ${i+1} — a concise NCERT-style point.`);
+  }
+  return lines.join("\n");
+}
+
+/* ====== State ====== */
+let coins = 0;
+let refreshCounts = {}; // refresh per branch
+let paraRefreshCount = 3;
+let currentBranch = null;
+let currentClass = "1";
+
+/* ====== Helpers ====== */
+function setCoins(v){ coins = v; document.getElementById('coins').textContent = "Coins: "+coins; }
+
+/* ====== Branch buttons control ====== */
+const classSelect = document.getElementById('classSelect');
+const branchArea = document.getElementById('branchArea');
+const openBranchesBtn = document.getElementById('openBranchesBtn');
+const qaArea = document.getElementById('qaArea');
+const qaResult = document.getElementById('qaResult');
+
+openBranchesBtn.addEventListener('click', ()=> {
+  const cls = classSelect.value;
+  currentClass = cls;
+  showBranchesForClass(cls);
+  branchArea.classList.add('open');
+});
+
+classSelect.addEventListener('change', ()=> {
+  branchArea.classList.remove('open');
+  qaArea.classList.remove('open'); qaArea.innerHTML='';
+  qaResult.classList.remove('open'); qaResult.innerHTML='';
+});
+
+function showBranchesForClass(cls){
+  // if class 8, show all branches, else show limited? user asked class8 branches - we'll show 4 always but only open when class=8
+  branchArea.innerHTML = '';
+  const branches = ["English","Math","Science","Social Science"];
+  branches.forEach(b=>{
+    const el = document.createElement('div');
+    el.className = 'branch';
+    el.textContent = b;
+    el.onclick = ()=> openBranch(b);
+    branchArea.appendChild(el);
+  });
+}
+
+/* ====== Questions logic ====== */
+function openBranch(branch){
+  // only allow entering branch if class selected (we accept all but content same), but the user requested class 8 triggers branches - we'll allow but show tip
+  currentBranch = branch;
+  if(!refreshCounts[branch]) refreshCounts[branch] = 3;
+  renderQuestions(branch);
+  // reveal QA area
+  qaArea.classList.add('open');
+  // scroll to it
+  qaArea.scrollIntoView({behavior:'smooth'});
+}
+
+function renderQuestions(branch){
+  qaArea.innerHTML = '';
+  qaResult.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'qa';
+  // pick 5 random questions for branch from QUESTIONS[branch]. If not present, fallback to Math.
+  const pool = QUESTIONS[branch] ? [...QUESTIONS[branch]] : [...QUESTIONS["Math"]];
+  // simple shuffle
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const selected = pool.slice(0,5);
+  let score = 0;
+  let answered = 0;
+
+  selected.forEach((it, idx)=>{
+    const qcard = document.createElement('div'); qcard.className='qcard';
+    const qtext = document.createElement('div'); qtext.className='qtext'; qtext.textContent = `${idx+1}. ${it.q}`;
+    qcard.appendChild(qtext);
+    const ops = document.createElement('div'); ops.className='options';
+    it.opts.forEach((opt, oi)=>{
+      const b = document.createElement('div'); b.className='opt'; b.textContent = opt;
+      b.onclick = ()=>{
+        if(b.classList.contains('disabled')) return;
+        // mark disabled
+        qcard.querySelectorAll('.opt').forEach(x=> x.classList.add('disabled'));
+        answered++;
+        if(oi === it.a){
+          b.classList.add('correct');
+          score += 10; coins += 10; setCoins(coins);
+        } else {
+          b.classList.add('wrong');
+          // highlight correct
+          const correctEl = qcard.querySelectorAll('.opt')[it.a];
+          if(correctEl) correctEl.classList.add('correct');
+        }
+        // when all answered show results
+        if(answered === selected.length){
+          showQAResult(score, selected.length);
+        }
+      };
+      ops.appendChild(b);
+    });
+    qcard.appendChild(ops);
+    wrap.appendChild(qcard);
+  });
+
+  // Refresh button (per branch) and info
+  const actions = document.createElement('div'); actions.style.display='flex'; actions.style.justifyContent='space-between'; actions.style.marginTop='12px';
+  const info = document.createElement('div'); info.style.fontWeight='800'; info.style.color='rgba(167,240,255,0.9)';
+  info.textContent = `Branch: ${branch} | Class: ${currentClass}`;
+  const refreshBtn = document.createElement('button'); refreshBtn.className='btn small';
+  refreshBtn.textContent = `Refresh (${ refreshCounts[branch] || 3 })`;
+  refreshBtn.onclick = ()=>{
+    if(!refreshCounts[branch]) refreshCounts[branch] = 3;
+    if(refreshCounts[branch] <= 0){ alert('Refresh limit reached for this branch.'); return; }
+    refreshCounts[branch]--;
+    refreshBtn.textContent = `Refresh (${ refreshCounts[branch] })`;
+    // re-render new questions
+    renderQuestions(branch);
+  };
+  actions.appendChild(info); actions.appendChild(refreshBtn);
+
+  qaArea.appendChild(wrap);
+  qaArea.appendChild(actions);
+}
+
+function showQAResult(score, totalQs){
+  qaResult.classList.add('open');
+  qaResult.innerHTML = `
+    <div class="result">
+      <div style="font-weight:900; color:#eafcff">Round Complete</div>
+      <div style="text-align:right;">
+        <div style="font-weight:900; font-size:1.1rem;">Score: ${score} / ${totalQs*10}</div>
+        <div style="font-size:0.95rem; color:rgba(255,255,255,0.85); margin-top:6px;">${score >= totalQs*8 ? '🏆 Great! Keep going.' : (score >= totalQs*5 ? '👍 Good! Practice more.' : '💪 Keep trying — you will improve!')}</div>
+      </div>
+    </div>
+  `;
+}
+
+/* ====== Puzzle panel ====== */
+const togglePuzzle = document.getElementById('togglePuzzle');
+const puzzlePanel = document.getElementById('puzzlePanel');
+const closePuzzle = document.getElementById('closePuzzle');
+const puzzleList = document.getElementById('puzzleList');
+
+togglePuzzle.addEventListener('click', ()=> puzzlePanel.classList.toggle('open'));
+closePuzzle.addEventListener('click', ()=> puzzlePanel.classList.remove('open'));
+
+function renderPuzzles(){
+  puzzleList.innerHTML = '';
+  PUZZLES.forEach((p, i)=>{
+    const el = document.createElement('div'); el.className='puzzle-item';
+    el.innerHTML = `<div style="font-weight:900">Puzzle ${i+1}</div><div style="margin-top:6px">${p.q}</div><div class="sol">${p.sol}</div>`;
+    el.addEventListener('click', ()=>{
+      const sol = el.querySelector('.sol');
+      sol.style.display = sol.style.display === 'block' ? 'none' : 'block';
+    });
+    puzzleList.appendChild(el);
+  });
+}
+renderPuzzles();
+
+/* ====== Learning section ====== */
+const gotoLearning = document.getElementById('gotoLearning');
+const learningArea = document.getElementById('learningArea');
+const learnBranches = document.getElementById('learnBranches');
+const chapterArea = document.getElementById('chapterArea');
+const chapterSummary = document.getElementById('chapterSummary');
+
+gotoLearning.addEventListener('click', ()=>{
+  learningArea.classList.add('open');
+  learnBranches.innerHTML = '';
+  const branches = Object.keys(CHAPTERS);
+  branches.forEach(b=>{
+    const btn = document.createElement('div'); btn.className='branch small'; btn.textContent=b;
+    btn.onclick = ()=> openLearnBranch(b);
+    learnBranches.appendChild(btn);
+  });
+  learningArea.scrollIntoView({behavior:'smooth'});
+});
+
+function openLearnBranch(branch){
+  chapterArea.innerHTML = ''; chapterSummary.innerHTML=''; chapterArea.classList.add('open');
+  CHAPTERS[branch].forEach((c, idx)=>{
+    const ch = document.createElement('div'); ch.className='chapter'; ch.textContent = c.title;
+    ch.onclick = ()=> showChapterSummary(branch, idx);
+    chapterArea.appendChild(ch);
+  });
+}
+
+function showChapterSummary(branch, idx){
+  chapterSummary.classList.add('open');
+  const c = CHAPTERS[branch][idx];
+  // show approx 80 words - we already used short summary; for demo show it
+  chapterSummary.innerHTML = `
+    <div style="font-weight:900; font-size:1.05rem; margin-bottom:8px;">${c.title}</div>
+    <div style="color:rgba(255,255,255,0.92); line-height:1.6;">${c.summary} (${generateFakeWords(c.summary,80)} )</div>
+  `;
+  chapterSummary.scrollIntoView({behavior:'smooth'});
+}
+function generateFakeWords(text, targetCount){
+  // simple filler: repeat summary until near 80 words
+  let words = text.split(/\s+/);
+  while(words.length < targetCount){
+    words = words.concat(words.slice(0, Math.min(words.length, targetCount - words.length)));
+  }
+  return words.slice(0,targetCount).join(' ');
+}
+
+/* ====== Paragraph learning ====== */
+const gotoParagraph = document.getElementById('gotoParagraph');
+const paragraphArea = document.getElementById('paragraphArea');
+const paraBox = document.getElementById('paraBox');
+const paraContent = document.getElementById('paraContent');
+const paraQuestions = document.getElementById('paraQuestions');
+const paraRefresh = document.getElementById('paraRefresh');
+const paraClass = document.getElementById('paraClass');
+
+let currentParaSubject = null;
+let paraRefreshLeft = 3;
+
+gotoParagraph.addEventListener('click', ()=> {
+  paragraphArea.classList.add('open');
+  // expand default area
+  document.getElementById('paraBox').classList.remove('open');
+  window.scrollBy({top:200, behavior:'smooth'});
+});
+
+function openParagraph(subject){
+  currentParaSubject = subject;
+  paraRefreshLeft = 3;
+  paraRefresh.textContent = `Refresh (${paraRefreshLeft})`;
+  renderParagraph(subject);
+  document.getElementById('paraBox').classList.add('open');
+  paraBox.scrollIntoView({behavior:'smooth'});
+}
+
+paraRefresh.addEventListener('click', ()=>{
+  if(paraRefreshLeft <= 0){ alert('No refreshes left for this paragraph.'); return; }
+  paraRefreshLeft--; paraRefresh.textContent = `Refresh (${paraRefreshLeft})`;
+  if(currentParaSubject) renderParagraph(currentParaSubject);
+});
+
+function renderParagraph(subject){
+  // generate 20-line paragraph and 5 random MCQs from lines
+  const cls = paraClass.value;
+  const paragraph = generateParagraphLines(subject, cls);
+  paraContent.innerHTML = `<div style="font-weight:900; margin-bottom:8px;">${subject} — Class ${cls}</div><div class="paragraph">${paragraph}</div>`;
+  // create 5 questions from lines (simple)
+  const lines = paragraph.split('\n');
+  const qList = [];
+  for(let i=0;i<5;i++){
+    const line = lines[i] || lines[0];
+    qList.push({
+      q: `Question ${i+1}: Which keyword is in line ${i+1}?`,
+      opts: [
+        extractWord(line,0),
+        extractWord(line,1) ,
+        extractWord(line,2) ,
+        extractWord(line,3)
+      ], a:0
+    });
+  }
+  // render qList
+  paraQuestions.innerHTML = '';
+  qList.forEach((it, idx)=>{
+    const div = document.createElement('div'); div.className='qcard';
+    div.innerHTML = `<div class="qtext">${it.q}</div>`;
+    const opts = document.createElement('div'); opts.className='options';
+    it.opts.forEach((o, oi)=>{
+      const op = document.createElement('div'); op.className='opt'; op.textContent=o;
+      op.onclick = ()=>{
+        if(op.classList.contains('disabled')) return;
+        // disable all in this q
+        div.querySelectorAll('.opt').forEach(x=> x.classList.add('disabled'));
+        if(oi === it.a){ op.classList.add('correct'); coins+=10; setCoins(coins); }
+        else { op.classList.add('wrong'); div.querySelectorAll('.opt')[it.a].classList.add('correct'); alert('Solution: '+ div.querySelectorAll('.opt')[it.a].textContent); }
+        // on each answer, show tip / update
+        document.getElementById('paraTips').textContent = `Answered: ${document.querySelectorAll('#paraQuestions .disabled').length} / ${qList.length}`;
+        // if all answered show motivational message
+        if(document.querySelectorAll('#paraQuestions .disabled').length === qList.length*1){
+          // compute score
+        }
+      };
+      opts.appendChild(op);
+    });
+    div.appendChild(opts);
+    paraQuestions.appendChild(div);
+  });
+
+  // reset paraTips
+  document.getElementById('paraTips').textContent = 'Answer the questions to earn coins!';
+}
+
+function extractWord(line, idx){
+  const words = line.replace(/[.,—–-]/g,'').split(/\s+/).filter(Boolean);
+  return words[idx%words.length] || words[0] || 'word';
+}
+
+/* ====== Simple UI on load ====== */
+setCoins(0);
+document.getElementById('learningArea').classList.remove('open');
+document.getElementById('paragraphArea').classList.remove('open');
+document.getElementById('branchArea').classList.remove('open');
+document.getElementById('qaArea').classList.remove('open');
+document.getElementById('qaResult').classList.remove('open');
+document.getElementById('paraBox').classList.remove('open');
+
+/* ====== Expose small helpful functions to console for debugging ====== */
+window._GL = {
+  renderQuestions, openBranch, QUESTIONS, CHAPTERS, PUZZLES
+};
+
+</script>
+</body>
+</html>
