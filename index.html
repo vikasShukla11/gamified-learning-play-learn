@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Gamified Learning — Landing</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    /* ---------- Reset ---------- */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html,body { height: 100%; }
+
+    /* ---------- Animated Gradient Background (black -> deep blue -> horizon blue) ---------- */
+    :root {
+      --red: #e50914;
+      --red-dark: #c20712;
+      --glass: rgba(255,255,255,0.06);
+      --card-bg: rgba(255,255,255,0.04);
+      --accent: #38b6ff;
+    }
+
+    body {
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color: #f3f6f9;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing:antialiased;
+      background: linear-gradient(120deg,#000 0%, #001a33 40%, #013a63 100%);
+      background-size: 300% 300%;
+      animation: bgShift 12s ease-in-out infinite;
+    }
+    @keyframes bgShift {
+      0% { background-position: 0% 50%; filter: drop-shadow(0 0 6px rgba(0,0,0,0.2)); }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* faint glow overlay */
+    body::after {
+      content:"";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(600px 300px at 10% 20%, rgba(56,182,255,0.06), transparent 10%),
+                  radial-gradient(500px 250px at 90% 80%, rgba(0,120,255,0.04), transparent 10%);
+      mix-blend-mode: screen;
+      z-index: 0;
+    }
+
+    /* ---------- Layout ---------- */
+    .app {
+      position: relative;
+      z-index: 2; /* above background overlays */
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar (hidden by default, slides in) */
+    .sidebar {
+      width: 240px;
+      max-width: 80%;
+      background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.5));
+      color: #fff;
+      padding: 22px;
+      position: fixed;
+      left: -260px;
+      top: 0;
+      height: 100%;
+      transition: left 0.36s cubic-bezier(.2,.9,.2,1);
+      box-shadow: 12px 0 30px rgba(0,0,0,0.5);
+      z-index: 1200;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      align-items: stretch;
+      border-right: 1px solid rgba(255,255,255,0.03);
+      backdrop-filter: blur(6px);
+    }
+    .sidebar.open { left: 0; }
+
+    .sidebar .close-btn {
+      align-self: flex-end;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 20px;
+      padding: 6px;
+      cursor: pointer;
+    }
+    .sidebar .profile {
+      display:flex; gap:12px; align-items:center;
+    }
+    .avatar {
+      width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,#0ea5e9,#6366f1);
+      display:inline-flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:18px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+    }
+    .username { font-size: 16px; font-weight: 700; color: #fff; opacity: 0.95; }
+
+    .sidebar .controls { display:flex; flex-direction:column; gap:10px; margin-top:8px; }
+
+    /* Global button style (red/white Netflix style) */
+    .btn {
+      display:inline-block; text-align:center; border:none; cursor:pointer;
+      padding:10px 14px; border-radius:8px; background: var(--red); color:#fff; font-weight:700;
+      box-shadow: 0 6px 18px rgba(233,9,20,0.14); transition: transform .18s ease, background .18s ease;
+      font-size: 14px;
+    }
+    .btn:hover { transform: translateY(-4px); background: var(--red-dark); }
+
+    .sidebar .small-btn {
+      padding:10px; font-size:14px; border-radius:8px; width:100%; text-align:left;
+      background: rgba(255,255,255,0.02);
+    }
+
+    /* Hide the floating menu button when sidebar open */
+    .menu-toggle {
+      position: fixed;
+      left: 20px; top: 20px;
+      z-index: 1150;
+      border: none;
+      background: var(--red); color: #fff;
+      padding: 10px 12px; border-radius:8px; cursor:pointer; font-weight:700;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.45);
+      transition: opacity .24s ease, transform .18s;
+    }
+    .menu-toggle.hidden { opacity: 0; transform: scale(.88); pointer-events: none; }
+
+    /* ---------- Main area ---------- */
+    .content {
+      flex: 1;
+      margin-left: 0; /* sidebar is fixed; we handle spacing with padding */
+      padding: 44px 36px;
+      min-height: 100vh;
+      z-index: 2;
+    }
+ /* Puzzle cards styled to match theme */
+.puzzle {
+  width: 220px;
+  min-height: 140px;
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(145deg, rgba(56,182,255,0.15), rgba(233,9,20,0.2));
+  box-shadow: 0 10px 28px rgba(0,0,0,0.55);
+  transition: transform 0.25s, background 0.25s;
+  position: relative;
+}
+
+.puzzle:hover {
+  transform: translateY(-6px) scale(1.05);
+  background: linear-gradient(145deg, rgba(233,9,20,0.25), rgba(56,182,255,0.2));
+}
+
+.puzzle.active {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: left;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.puzzle-label {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.puzzle-question {
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+  color: rgba(255,255,255,0.92);
+}
+
+.puzzle-solution {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #a7f0ff;
+  display: none;
+  font-weight: 600;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 6px;
+}
+/* Expanded puzzle body */
+.puzzle-body {
+  display: none;
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: linear-gradient(160deg, rgba(0,120,255,0.08), rgba(233,9,20,0.06));
+  box-shadow: inset 0 4px 14px rgba(0,0,0,0.4);
+  color: #fff;
+}
+
+.puzzle-body .puzzle-question {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.puzzle-body .puzzle-solution {
+  margin-top: 10px;
+  display: none;
+  font-weight: 600;
+  color: #a7f0ff;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 6px;
+}
+
+
+
+
+    .top-right {
+      position: absolute; top: 20px; right: 28px; z-index: 1100; text-align:right;
+    }
+    .top-right .about-btn { margin-bottom: 8px; }
+
+    .top-right .email { display:block; color: #a7f0ff; font-weight:700; margin-bottom:6px; }
+    .top-right .tag { color: rgba(255,255,255,0.8); font-size:13px; margin-bottom:8px; }
+
+    /* ---------- Title box ---------- */
+    .hero {
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:18px; padding-top: 40px;
+    }
+    .title-box {
+      background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border-radius: 40px; /* big rounded/curved ends */
+      padding: 24px 36px;
+      display:inline-block;
+      min-width: 520px; max-width: 92%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.04);
+      text-align:center;
+    }
+    .title-box h1 {
+      font-size: 3.4rem; /* larger title */
+      line-height: 1.05;
+      color: #fff;
+      margin-bottom: 8px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+    .subtitle {
+      color: rgba(255,255,255,0.85);
+      font-size: 1.15rem;
+      line-height: 1.6; /* two-line spacing comfortable */
+      max-width: 900px;
+      margin: 0 auto;
+      font-weight: 500;
+    }
+
+    /* ---------- Gallery ---------- */
+    .section {
+      margin-top: 56px;
+    }
+    .gallery {
+      margin-top: 18px;
+      display:flex; gap:18px; flex-wrap:wrap; justify-content:center;
+      align-items:center;
+    }
+    .gallery .card {
+      width: 180px; height: 220px; border-radius:14px; overflow:hidden;
+      position:relative; cursor:pointer;
+      box-shadow: 0 12px 30px rgba(10,20,40,0.45);
+      transition: transform .4s cubic-bezier(.2,.9,.3,1), box-shadow .35s, opacity .4s, filter .35s;
+      transform: translateY(28px);
+      opacity: 0;
+    }
+    .gallery .card.visible {
+      transform: translateY(0); opacity: 1;
+    }
+    .gallery img {
+      width:100%; height:100%; object-fit:cover; display:block; filter: saturate(0.95) contrast(1.03);
+      border-radius:14px;
+    }
+    .gallery .card::after {
+      content: "";
+      position:absolute; inset:0; pointer-events:none;
+      box-shadow: 0 0 26px rgba(56,182,255,0.12) inset;
+      border-radius:14px;
+      transition: box-shadow .25s;
+    }
+    .gallery .card:hover {
+      transform: translateY(-8px) scale(1.06);
+      box-shadow: 0 24px 60px rgba(3,12,30,0.7);
+    }
+    .gallery .caption {
+      position:absolute; left:0; right:0; bottom:8px; color:#fff; text-shadow:0 6px 14px rgba(0,0,0,0.7);
+      font-weight:700; font-size:14px; padding:8px 12px;
+      display:flex; justify-content:space-between; gap:6px; align-items:center;
+      background: linear-gradient(180deg, transparent, rgba(0,0,0,0.45));
+    }
+
+    /* scientist info modal (in-page) */
+    .info-modal {
+      position: fixed;
+      left: 50%; top: 60%;
+      transform: translate(-50%, -10%);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      color: #fff; padding:18px; border-radius:12px;
+      width: min(780px, 92%);
+      box-shadow: 0 30px 80px rgba(1,10,30,0.7);
+      z-index: 1500;
+      display:none;
+    }
+    .info-modal.open { display:block; animation: appear .24s ease-out; }
+    .info-title { font-weight:800; font-size:20px; margin-bottom:8px; }
+    .info-body { color: rgba(255,255,255,0.95); line-height:1.6; font-size:15px; }
+    .info-close { position:absolute; right:12px; top:10px; border:none; background:transparent; color:#fff; font-size:18px; cursor:pointer; }
+
+    @keyframes appear { from { opacity: 0; transform: translate(-50%, -6%) scale(.98);} to { opacity:1; transform: translate(-50%, -10%) scale(1);} }
+
+    /* ---------- Facts ---------- */
+    .facts { margin-top: 40px; display:flex; gap:16px; flex-wrap:wrap; justify-content:center; }
+    .fact-card {
+  width: 240px; padding:18px; border-radius:12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.03);
+  transition: transform .22s ease, background .22s ease;
+  cursor:pointer;
+  box-shadow: 0 8px 24px rgba(3,10,25,0.45);
+}
+
+    .fact-card:hover { transform: translateY(-8px) scale(1.02); background: rgba(56,182,255,0.03); }
+    .fact-title { font-weight: 800; margin-bottom: 8px; color:#fff; } /* bold titles */
+    .fact-desc { display:none; color: rgba(255,255,255,0.9); line-height:1.6; font-size:14px; }
+
+    /* ---------- Puzzles ---------- */
+    .puzzles { margin-top: 56px; display:flex; gap:18px; justify-content:center; flex-wrap:wrap; }
+    .puzzle {
+      width: 190px; height: 120px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+      font-weight:800; color:#fff; transition: transform .22s, opacity .22s;
+      background: linear-gradient(90deg, rgba(233,9,20,0.9), rgba(255,94,0,0.95));
+      cursor:pointer; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .puzzles:hover .puzzle:not(:hover) { transform: scale(.92); opacity:0.78; }
+    .puzzle:hover { transform: scale(1.12); z-index: 600; }
+
+    /* responsive */
+    @media (max-width:920px) {
+      .title-box h1 { font-size: 2.4rem; }
+      .title-box { min-width: 320px; padding: 18px 22px; border-radius: 28px; }
+      .menu-toggle { left: 12px; top: 12px; padding: 8px 10px; }
+      .sidebar { width: 220px; }
+    }
+    @media (max-width:520px) {
+      .gallery .card { width: 140px; height: 170px; }
+      .fact-card { width: 100%; }
+      .puzzle { width: 46%; }
+      .title-box { min-width: 92%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar toggle floating button -->
+    <button class="menu-toggle" id="menuToggle" onclick="openSidebar()">☰ Menu</button>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <button class="close-btn" id="closeBtn" title="Close" onclick="closeSidebar()">←</button>
+      <div class="profile">
+        <div class="avatar" id="avatar">YT</div>
+        <div>
+          <div class="username" id="username">Your Name</div>
+          <div style="font-size:12px; color:rgba(255,255,255,0.6); margin-top:4px;">Student • Level: Beginner</div>
+        </div>
+      </div>
+
+      <div style="margin-top:6px;">
+        <button class="small-btn btn" onclick="toggleTheme()">🌙 Toggle Theme</button>
+      </div>
+
+      <div class="controls">
+        <button class="small-btn" onclick="cycleClass()">📚 Class: <span id="classLabel">2</span></button>
+        <button class="small-btn" onclick="window.location.href='index_2.html'"> Lessons</button>
+      </div>
+
+      <div style="margin-top:auto;">
+        <button class="btn" onclick="startNow()">Start Learning</button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="content">
+      <!-- top right -->
+     <div class="top-right">
+  <div style="display:flex; gap:10px; justify-content:flex-end; margin-bottom:10px;">
+    <button class="btn about-btn" onclick="openAbout()">About</button>
+    <button class="btn" onclick="alert('Sign In page coming soon!')">LogIn</button>
+  </div>
+  <span class="email" id="email">youremail@example.com</span>
+  <div class="tag">Learn here in gaming style</div>
+  <div style="height:10px;"></div>
+  <button class="btn get-started" onclick="scrollToSection('gallery')">Get Started</button>
+</div>
+
+
+      <!-- hero/title -->
+      <section class="hero" aria-label="Hero">
+        <div class="title-box" role="banner">
+          <h1>Gamified Learning — Play & Learn</h1>
+          <div class="subtitle">
+            Study smart with games. Two minutes a day of fun problems builds a lifetime of understanding.<br>
+            Let curiosity win — learn, play, and level up!
+          </div>
+        </div>
+      </section>
+
+      <!-- gallery -->
+      <section class="section" id="gallery" aria-label="Scientists gallery">
+        <h2 style="margin-top:36px; font-size:1.5rem; color:#e6f7ff; text-align:center;">Great Scientists & Mathematicians</h2>
+        <div class="gallery" id="galleryGrid">
+          <div class="card" data-title="Dr. A.P.J. Abdul Kalam" data-desc="A.P.J. Abdul Kalam — 'Missile Man of India'. An aerospace engineer who inspired millions with a humble life, strong ethics, and focus on education and innovation. Known for his leadership in India's civilian space program and military missile development.">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6e/A._P._J._Abdul_Kalam.jpg" alt="A.P.J. Abdul Kalam">
+            <div class="caption"><div>Kalam</div><div>India</div></div>
+          </div>
+
+          <div class="card" data-title="Albert Einstein" data-desc="Albert Einstein — revolutionary physicist whose theory of relativity changed our understanding of space, time, and gravity. A playful thinker who valued imagination as much as knowledge. His work laid foundations for modern physics and cosmology.">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/1/14/Albert_Einstein_1947.jpg" alt="Albert Einstein">
+            <div class="caption"><div>Einstein</div><div>Germany/USA</div></div>
+          </div>
+
+          <div class="card" data-title="Srinivasa Ramanujan" data-desc="Srinivasa Ramanujan — extraordinary mathematician from India who discovered deep results in number theory, infinite series and continued fractions with little formal training. His intuitive discoveries continue to inspire mathematicians worldwide.">
+           <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Srinivasa_Ramanujan_-_OPC_-_1.jpg" 
+       alt="Srinivasa Ramanujan">
+            <div class="caption"><div>Ramanujan</div><div>India</div></div>
+          </div>
+
+          <div class="card" data-title="Marie Curie" data-desc="Marie Curie — pioneer of radioactivity research, first woman to win Nobel Prize and the only person to win Nobel Prizes in two different sciences (Physics and Chemistry). Her work transformed medicine and physics.">
+           <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Marie_Curie_c1920.jpg" alt="Curie">
+            <div class="caption"><div>Marie Curie</div><div>Poland/France</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- facts -->
+      <section class="section" id="benefits">
+        <h2 style="margin-top:56px; text-align:center; color:#e6f7ff;">Benefits of Learning in Gaming Style</h2>
+        <div class="facts" id="factsGrid">
+          <div class="fact-card" onclick="toggleFact(this)">
+            <div class="fact-title">Learning is fun 🎉</div>
+            <div class="fact-desc">Playful contexts reduce stress, increase dopamine and improve focus — making learning more effective at encoding memories.</div>
+          </div>
+
+          <div class="fact-card" onclick="toggleFact(this)">
+            <div class="fact-title">Better memory 🧠</div>
+            <div class="fact-desc">Repeated retrieval in game-like tasks strengthens neural pathways; spaced, active practice builds durable memory traces.</div>
+          </div>
+
+          <div class="fact-card" onclick="toggleFact(this)">
+            <div class="fact-title">Engagement 🔥</div>
+            <div class="fact-desc">Immediate feedback and progressive challenges keep attention sustained — the brain learns best when curiosity is engaged.</div>
+          </div>
+
+          <div class="fact-card" onclick="toggleFact(this)">
+            <div class="fact-title">Healthy competition 🏆</div>
+            <div class="fact-desc">Competition raises arousal and concentration; when balanced, it encourages persistence and deeper learning strategies.</div>
+          </div>
+
+          <div class="fact-card" onclick="toggleFact(this)">
+            <div class="fact-title">Creativity 🎨</div>
+            <div class="fact-desc">Open-ended puzzles and playful constraints foster divergent thinking and flexible problem-solving skills.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- puzzles -->
+     <!-- puzzles -->
+<!-- puzzles -->
+<section class="section" id="puzzles">
+  <h2 style="margin-top:56px; text-align:center; color:#e6f7ff;">Tricky Puzzle Time</h2>
+  <div class="puzzles" id="puzzleGrid">
+    <div class="puzzle" data-q="I am taken from a mine, locked in a wooden case, never released, yet almost every student uses me. What am I?" data-sol="Pencil lead (graphite)!">
+      <div class="puzzle-label">Puzzle 1</div>
+    </div>
+    <div class="puzzle" data-q="A farmer has 17 sheep. All but 9 run away. How many sheep are left?" data-sol="9 sheep are left.">
+      <div class="puzzle-label">Puzzle 2</div>
+    </div>
+    <div class="puzzle" data-q="If you multiply me by any other number, the answer will always remain the same. What number am I?" data-sol="Zero (0).">
+      <div class="puzzle-label">Puzzle 3</div>
+    </div>
+    <div class="puzzle" data-q="Two fathers and two sons went fishing. They caught 3 fish, but each person got one fish. How is this possible?" data-sol="They were grandfather, father, and son — 3 people.">
+      <div class="puzzle-label">Puzzle 4</div>
+    </div>
+  </div>
+</section>
+
+
+    </main>
+  </div>
+
+  <!-- Info modal (in-page, not an alert) -->
+  <div class="info-modal" id="infoModal" role="dialog" aria-modal="true">
+    <button class="info-close" aria-label="Close" onclick="closeInfo()">✕</button>
+    <div class="info-title" id="infoTitle">Title</div>
+    <div class="info-body" id="infoBody">Description lines...</div>
+  </div>
+
+  <script>
+    // ---------- sidebar open/close with toggle button hide/show ----------
+    const sidebar = document.getElementById('sidebar');
+    const menuToggle = document.getElementById('menuToggle');
+    const closeBtn = document.getElementById('closeBtn');
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      menuToggle.classList.add('hidden');
+    }
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      menuToggle.classList.remove('hidden');
+    }
+
+    // close when click outside sidebar (optional)
+    document.addEventListener('click', (e) => {
+      if (!sidebar.classList.contains('open')) return;
+      const withinSidebar = e.composedPath().includes(sidebar);
+      const clickedToggle = e.target === menuToggle;
+      if (!withinSidebar && !clickedToggle) {
+        closeSidebar();
+      }
+    });
+
+    // ---------- gallery reveal on scroll ----------
+    const galleryCards = document.querySelectorAll('.gallery .card');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(en => {
+        if (en.isIntersecting) {
+          en.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.18 });
+    galleryCards.forEach(c => observer.observe(c));
+
+    // ---------- in-page info modal (3-4 lines) ----------
+    const infoModal = document.getElementById('infoModal');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+
+    document.querySelectorAll('.gallery .card').forEach(card => {
+      card.addEventListener('click', () => {
+        const title = card.dataset.title || card.querySelector('img').alt || 'Scientist';
+        let desc = card.dataset.desc || 'A brilliant figure who contributed greatly to science and inspired generations.';
+        // Ensure approx 3-4 lines by trimming/formatting
+        if (desc.length > 320) desc = desc.slice(0, 320) + '...';
+        infoTitle.textContent = title;
+        infoBody.textContent = desc;
+        infoModal.classList.add('open');
+        // scroll to show modal if small screens
+        setTimeout(() => {
+          infoModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 40);
+      });
+    });
+
+    function closeInfo() {
+      infoModal.classList.remove('open');
+    }
+
+    // close modal on ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeInfo();
+    });
+
+    // ---------- facts toggle ----------
+    function toggleFact(el) {
+      const desc = el.querySelector('.fact-desc');
+      if (!desc) return;
+      const open = desc.style.display === 'block';
+      // close others
+      document.querySelectorAll('.fact-desc').forEach(d => d.style.display = 'none');
+      desc.style.display = open ? 'none' : 'block';
+      // smooth scroll small amount to keep in view
+      setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 120);
+    }
+// ---------- puzzles toggle (with working Show Solution) ----------
+(function(){
+  const cards = document.querySelectorAll('#puzzleGrid .puzzle');
+
+  function collapseCard(card){
+    card.classList.remove('active');
+    const body = card.querySelector('.puzzle-body');
+    if (body) body.style.display = 'none';
+  }
+
+  function expandCard(card){
+    // collapse others
+    cards.forEach(c => { if (c !== card) collapseCard(c); });
+
+    let body = card.querySelector('.puzzle-body');
+    if (!body) {
+      body = document.createElement('div');
+      body.className = 'puzzle-body';
+
+      const q = card.dataset.q;
+      const sol = card.dataset.sol;
+
+      body.innerHTML = `
+        <div class="puzzle-question">${q}</div>
+        <button class="btn show-solution-btn" type="button">Show Solution</button>
+        <div class="puzzle-solution" style="display:none;">${sol}</div>
+      `;
+      card.appendChild(body);
+
+      // ✅ This is the important fix
+      const showBtn = body.querySelector('.show-solution-btn');
+      const solDiv = body.querySelector('.puzzle-solution');
+      showBtn.addEventListener('click', (e)=>{
+        e.stopPropagation();              // don’t close puzzle on click
+        solDiv.style.display = 'block';   // show solution
+        showBtn.style.display = 'none';   // hide button after clicked
+      });
+    } else {
+      body.style.display = 'block';
+    }
+
+    card.classList.add('active');
+  }
+
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      const isActive = card.classList.contains('active');
+      if (isActive) collapseCard(card); else expandCard(card);
+    });
+  });
+})();
+
+
+
+    // ---------- utilities ----------
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+    }
+
+    // simple class cycle
+    const classLabel = document.getElementById('classLabel');
+    const classes = [2,3,4,5,6,7,8];
+    let idx = 0;
+    function cycleClass() {
+      idx = (idx + 1) % classes.length;
+      classLabel.textContent = classes[idx];
+    }
+
+    function openAbout() {
+      // smooth scroll to benefits section as demo
+      document.getElementById('benefits').scrollIntoView({behavior:'smooth'});
+    }
+
+    function startNow() {
+      document.getElementById('gallery').scrollIntoView({behavior:'smooth'});
+    }
+
+    function openLessons() {
+      alert('Lessons panel (demo).');
+    }
+
+    // scroll to section by id
+    function scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+
+    // prevent menu toggle closure when clicking inside sidebar
+    sidebar.addEventListener('click', (e) => { e.stopPropagation(); });
+
+  </script>
+</body>
+</html>
