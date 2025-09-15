@@ -1,0 +1,456 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Subjects Adventure Hub</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    /* Base / theme kept consistent with previous design (soft blue gradient, curved cards) */
+    :root{
+      --primary:#007bff;
+      --primary-dark:#0056b3;
+      --bg:#f0f8ff;
+      --card:#ffffff;
+      --green:#28a745;
+      --green-dark:#1e7e34;
+      --danger:#dc3545;
+    }
+    html,body{height:100%;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;color:#0b2136;background:var(--bg);}
+    header{background:linear-gradient(90deg,var(--primary), #0b63c7);color:#fff;padding:22px;border-radius:0 0 18px 18px;box-shadow:0 10px 40px rgba(3,12,30,0.12);text-align:center;}
+    header h1{margin:0;font-size:28px;letter-spacing:-0.5px;}
+    header p{margin:6px 0 0;font-weight:600;opacity:0.95;}
+
+    main{max-width:1100px;margin:26px auto;padding:0 18px 80px;}
+
+/* Section titles */
+.section-title{margin:42px 0 12px;font-size:20px;color:#04283a;font-weight:800;text-align:left;}
+
+/* Cards */
+.card{
+  background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.98));
+  border-radius:12px;padding:18px;box-shadow:0 12px 36px rgba(3,12,30,0.06);border:1px solid rgba(0,0,0,0.03);
+  margin-bottom:12px;
+}
+
+/* Question text */
+.qtext{font-weight:800;color:#07283a;margin-bottom:12px;font-size:1rem}
+
+/* Options */
+.options{display:flex;flex-wrap:wrap;gap:10px}
+.opt{
+  padding:10px 14px;border-radius:10px;background:var(--primary);color:#fff;cursor:pointer;border:none;min-width:160px;text-align:center;font-weight:800;transition:transform .18s,box-shadow .18s;
+}
+.opt:hover{transform:translateY(-6px);box-shadow:0 10px 30px rgba(3,12,30,0.12);background:var(--primary-dark)}
+.opt.correct{background:rgba(56,182,255,0.14);color:#002033;border:1px solid rgba(56,182,255,0.28)}
+.opt.wrong{background:rgba(233,9,20,0.12);color:#2b0000;border:1px solid rgba(233,9,20,0.28)}
+
+/* feedback / score */
+.feedback{margin-top:12px;font-weight:800}
+.feedback.correct{color:green}
+.feedback.wrong{color:var(--danger)}
+
+/* small controls */
+.controls{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.btn{background:var(--primary);color:#fff;padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:800;box-shadow:0 8px 26px rgba(3,12,30,0.08);transition:transform .16s}
+.btn:hover{transform:translateY(-4px);background:var(--primary-dark)}
+.btn.secondary{background:linear-gradient(90deg, rgba(255,255,255,0.96), rgba(255,255,255,0.96));color:var(--primary);border:1px solid rgba(0,0,0,0.06)}
+.refresh{background:var(--green);border:none}
+.refresh:hover{background:var(--green-dark)}
+.small{padding:8px 10px;font-size:0.95rem}
+
+/* Games input / layout */
+.game-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:12px}
+input[type=number]{padding:8px;border-radius:8px;border:1px solid rgba(3,12,30,0.06);width:120px}
+
+/* make sections responsive */
+@media (max-width:880px){
+  .opt{min-width:calc(50% - 18px)}
+  main{padding:0 14px 80px}
+}
+
+/* footer small */
+.footer-note{margin-top:26px;text-align:center;color:#254b61;font-weight:700}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📘 Subjects Adventure Hub</h1>
+    <p>Quizzes • Games • Learn — Scroll down to explore Science, Math, Social Science, English and interactive games</p>
+  </header>
+
+  <main>
+    <!-- ========== SCIENCE QUIZ ========== -->
+    <div class="section-title">🔬 Science Adventure</div>
+    <div id="scienceCard" class="card"></div>
+    <div class="controls">
+      <button class="btn refresh small" onclick="refreshQuiz('science')">🔄 Refresh (Science)</button>
+      <div id="scienceInfo" style="font-weight:800;color:#0a2b3a;margin-left:10px"></div>
+    </div>
+
+    <!-- ========== MATH QUIZ ========== -->
+    <div class="section-title">➕ Math Adventure</div>
+    <div id="mathCard" class="card"></div>
+    <div class="controls">
+      <button class="btn refresh small" onclick="refreshQuiz('math')">🔄 Refresh (Math)</button>
+      <div id="mathInfo" style="font-weight:800;color:#0a2b3a;margin-left:10px"></div>
+    </div>
+
+    <!-- ========== SOCIAL QUIZ ========== -->
+    <div class="section-title">🌍 Social Science Adventure</div>
+    <div id="socialCard" class="card"></div>
+    <div class="controls">
+      <button class="btn refresh small" onclick="refreshQuiz('social')">🔄 Refresh (Social)</button>
+      <div id="socialInfo" style="font-weight:800;color:#0a2b3a;margin-left:10px"></div>
+    </div>
+
+    <!-- ========== ENGLISH QUIZ ========== -->
+    <div class="section-title">✍️ English Adventure</div>
+    <div id="englishCard" class="card"></div>
+    <div class="controls">
+      <button class="btn refresh small" onclick="refreshQuiz('english')">🔄 Refresh (English)</button>
+      <div id="englishInfo" style="font-weight:800;color:#0a2b3a;margin-left:10px"></div>
+    </div>
+
+    <!-- ========== GAMES ZONE ========== -->
+    <div class="section-title">🎮 Fun Games Zone — Math & Science (non-quiz)</div>
+
+    <!-- Number Guessing -->
+    <div class="card">
+      <h3 style="margin:0 0 8px">🔢 Number Guessing</h3>
+      <div>Guess a secret number between 1 and 20. Helpful for estimation & number sense.</div>
+      <div class="game-row" style="margin-top:12px">
+        <input id="guessInput" type="number" min="1" max="20" placeholder="1 - 20">
+        <button class="btn small" onclick="checkGuess()">Guess</button>
+        <button class="btn small" onclick="resetGuess()">Reset</button>
+      </div>
+      <p id="guessResult" style="font-weight:800;margin-top:12px"></p>
+    </div>
+
+    <!-- Quick Calculation -->
+    <div class="card">
+      <h3 style="margin:0 0 8px">➕ Quick Mental Math</h3>
+      <div>Solve the shown addition quickly — build speed with mental arithmetic.</div>
+      <div class="game-row">
+        <div id="calcQ" style="font-weight:900;font-size:1.05rem"></div>
+        <input id="calcAns" type="number" placeholder="Answer">
+        <button class="btn small" onclick="checkCalc()">Submit</button>
+        <button class="btn small" onclick="newCalc()">New</button>
+      </div>
+      <p id="calcResult" style="font-weight:800;margin-top:12px"></p>
+    </div>
+
+    <!-- Reaction Time -->
+    <div class="card">
+      <h3 style="margin:0 0 8px">⏱️ Reaction Time (Science)</h3>
+      <div>Start → wait for 'GO' → press Stop as fast as you can. Practice hand-eye reflexes.</div>
+      <div class="game-row">
+        <button class="btn small" id="reactStart" onclick="startReaction()">Start</button>
+        <button class="btn small" id="reactStop" onclick="stopReaction()" disabled>Stop</button>
+        <button class="btn small" onclick="resetReaction()">Reset</button>
+      </div>
+      <p id="reactionResult" style="font-weight:800;margin-top:12px"></p>
+    </div>
+
+    <!-- Periodic Table Finder (40 elements) -->
+    <div class="card">
+      <h3 style="margin:0 0 8px">⚛️ Periodic Table Finder</h3>
+      <div id="elementQ" style="font-weight:900"></div>
+      <div id="elementOptions" class="options" style="justify-content:center;margin-top:12px"></div>
+      <div style="margin-top:12px" class="controls">
+        <button class="btn small refresh" onclick="refreshElement()">🔄 New Element</button>
+        <div id="elementInfo" style="font-weight:800;color:#0a2b3a;margin-left:8px"></div>
+      </div>
+      <p id="elementResult" class="feedback" style="margin-top:12px"></p>
+    </div>
+
+    <!-- Social Science Game: Country-Capital Match -->
+    <div class="card">
+      <h3 style="margin:0 0 8px">🌍 Country — Capital Match</h3>
+      <div id="countryQ" style="font-weight:900"></div>
+      <div id="countryOptions" class="options" style="justify-content:center;margin-top:12px"></div>
+      <div style="margin-top:12px" class="controls">
+        <button class="btn small refresh" onclick="refreshCountry()">🔄 New Country</button>
+        <div id="countryInfo" style="font-weight:800;color:#0a2b3a;margin-left:8px"></div>
+      </div>
+      <p id="countryResult" class="feedback" style="margin-top:12px"></p>
+    </div>
+
+    <div class="footer-note">Keep playing & learning — small daily practice builds strong foundations.</div>
+  </main>
+
+  <script>
+/* ========= QUIZ DATA (5 questions per subject) =========
+   Each question: {q, options[], ans(index), exp}
+*/
+const quizData = {
+  science: [
+    { q: "Which gas is essential for rusting of iron?", options: ["Carbon dioxide","Oxygen","Nitrogen","Hydrogen"], ans:1, exp:"Rusting requires oxygen and moisture; oxygen reacts with iron." },
+    { q: "Which mirror is used in car headlights?", options: ["Convex","Concave","Plane","None"], ans:1, exp:"Concave mirrors form focused parallel beams — suitable for headlights." },
+    { q: "Which metal is stored under kerosene to prevent reaction with air?", options: ["Sodium","Iron","Copper","Calcium"], ans:0, exp:"Sodium reacts with air and water; kerosene prevents contact with air." },
+    { q: "Malaria is caused by:", options: ["Bacteria","Protozoa","Virus","Fungi"], ans:1, exp:"Plasmodium (a protozoan) causes malaria." },
+    { q: "Sound cannot travel through:", options: ["Air","Water","Vacuum","Iron"], ans:2, exp:"Sound needs a medium (solid/liquid/gas). It cannot travel through vacuum." }
+  ],
+  math: [
+    { q: "What is 15 × 12?", options: ["180","190","200","210"], ans:0, exp:"15×12 = (15×10)+(15×2) = 150+30 = 180." },
+    { q: "Simplify: 50 ÷ 2 + 10", options: ["30","35","40","45"], ans:1, exp:"50÷2 = 25; 25 + 10 = 35." },
+    { q: "Square of 25 is:", options: ["525","625","725","825"], ans:1, exp:"25² = 625." },
+    { q: "LCM of 6 and 8 is:", options: ["12","18","24","48"], ans:2, exp:"Multiples of 6:6,12,18,24…; of 8:8,16,24… LCM = 24." },
+    { q: "Value of π (approx)?", options: ["3.14","2.71","1.61","3.41"], ans:0, exp:"π ≈ 3.14." }
+  ],
+  social: [
+    { q: "Who is called the Father of the Nation in India?", options: ["Mahatma Gandhi","Subhash Bose","Nehru","Sardar Patel"], ans:0, exp:"Mahatma Gandhi is popularly called the Father of the Nation." },
+    { q: "Which river is the longest in India?", options: ["Yamuna","Narmada","Ganga","Godavari"], ans:2, exp:"The Ganga (Ganges) is the longest river of India." },
+    { q: "Capital of India is:", options: ["Mumbai","New Delhi","Kolkata","Chennai"], ans:1, exp:"New Delhi is the capital of India." },
+    { q: "Who chaired the drafting committee of Indian Constitution?", options: ["B.R. Ambedkar","Gandhi","Patel","Nehru"], ans:0, exp:"Dr. B.R. Ambedkar was chairman of the Drafting Committee." },
+    { q: "In which year did India gain independence?", options: ["1942","1945","1947","1950"], ans:2, exp:"India gained independence on 15 August 1947." }
+  ],
+  english: [
+    { q: "Choose correct spelling:", options: ["Recieve","Receive","Recive","Receeve"], ans:1, exp:"Correct spelling is 'Receive'." },
+    { q: "Synonym of 'Happy' is:", options: ["Sad","Joyful","Angry","Tired"], ans:1, exp:"Joyful is a synonym of Happy." },
+    { q: "Antonym of 'Big' is:", options: ["Small","Huge","Large","Tall"], ans:0, exp:"Small is the antonym of Big." },
+    { q: "Plural of 'Child' is:", options: ["Childs","Children","Childes","Childrens"], ans:1, exp:"Plural form is 'Children'." },
+    { q: "Fill: The sun ____ in the east.", options: ["rise","rises","rised","raising"], ans:1, exp:"Correct: 'The sun rises in the east'." }
+  ]
+};
+
+/* ========= STATE ========= */
+const quizState = {
+  science:{index:0,score:0,refreshUsed:0},
+  math:{index:0,score:0,refreshUsed:0},
+  social:{index:0,score:0,refreshUsed:0},
+  english:{index:0,score:0,refreshUsed:0}
+};
+const REFRESH_LIMIT = 3;
+
+/* Utility shuffle */
+function shuffleArray(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
+/* Load single subject quiz card */
+function loadQuizCard(subj){
+  const state = quizState[subj];
+  const data = quizData[subj];
+  const container = document.getElementById(subj + "Card");
+  if(state.index >= data.length){
+    // finished
+    const msg = state.score >= data.length*8 ? "🏆 Excellent! Keep going." : state.score >= data.length*5 ? "👍 Good! Practice more." : "💪 Keep trying — you will improve!";
+    container.innerHTML = `<div class="qtext">🎉 Quiz Complete</div>
+      <div style="font-weight:900">Score: ${state.score}</div>
+      <div style="margin-top:8px;color:#254b61">${msg}</div>`;
+    // show info about refresh usage
+    document.getElementById(subj + "Info").textContent = `Refresh used: ${state.refreshUsed}/${REFRESH_LIMIT}`;
+    return;
+  }
+
+  const q = data[state.index];
+  let html = `<div class="qtext">${state.index+1}. ${q.q}</div><div class="options">`;
+  q.options.forEach((opt,i)=>{
+    html += `<button class="opt" onclick="answer('${subj}',${i})" id="${subj}-opt-${i}">${opt}</button>`;
+  });
+  html += `</div><div id="${subj}-feedback" class="feedback" style="min-height:26px;margin-top:12px"></div>
+           <div style="margin-top:10px;font-weight:800">Score: ${state.score}</div>`;
+  container.innerHTML = html;
+  document.getElementById(subj + "Info").textContent = `Refresh used: ${state.refreshUsed}/${REFRESH_LIMIT}`;
+}
+
+/* handle answer */
+function answer(subj, selectedIdx){
+  const state = quizState[subj];
+  const q = quizData[subj][state.index];
+  const fbEl = document.getElementById(subj + "-feedback");
+  // disable options
+  const opts = document.querySelectorAll(`#${subj}Card .opt`);
+  opts.forEach(o=> o.disabled = true);
+
+  if(selectedIdx === q.ans){
+    state.score += 10;
+    fbEl.textContent = `✅ Correct! +10 | ${q.exp}`;
+    fbEl.className = "feedback correct";
+    document.getElementById(`${subj}-opt-${selectedIdx}`).classList.add('correct');
+  } else {
+    fbEl.textContent = `❌ Wrong! ${q.exp}`;
+    fbEl.className = "feedback wrong";
+    document.getElementById(`${subj}-opt-${selectedIdx}`).classList.add('wrong');
+    // highlight correct
+    const correctBtn = document.getElementById(`${subj}-opt-${q.ans}`);
+    if(correctBtn) correctBtn.classList.add('correct');
+  }
+
+  state.index++;
+  // small delay then load next
+  setTimeout(()=>{ loadQuizCard(subj); }, 1400);
+}
+
+/* refresh quiz (shuffle + reset) */
+function refreshQuiz(subj){
+  if(quizState[subj].refreshUsed >= REFRESH_LIMIT){
+    alert("Refresh limit reached for " + subj.toUpperCase() + "!");
+    return;
+  }
+  quizState[subj].refreshUsed++;
+  // shuffle questions (create new array copy)
+  quizData[subj] = shuffleArray(quizData[subj].slice());
+  quizState[subj].index = 0;
+  quizState[subj].score = 0;
+  loadQuizCard(subj);
+}
+
+/* initialize all quizzes on page load */
+['science','math','social','english'].forEach(s=> loadQuizCard(s));
+
+/* ========= GAMES ========= */
+
+/* --- Number Guessing --- */
+let secret = Math.floor(Math.random()*20)+1;
+function checkGuess(){
+  const val = parseInt(document.getElementById('guessInput').value,10);
+  const out = document.getElementById('guessResult');
+  if(!val || val<1 || val>20){ out.textContent = "Enter a number between 1 and 20."; return; }
+  if(val === secret){ out.textContent = "🎉 Correct! You guessed the number! (Resetting secret)"; secret = Math.floor(Math.random()*20)+1; }
+  else if(val < secret) out.textContent = "Too low! Try again.";
+  else out.textContent = "Too high! Try again.";
+}
+function resetGuess(){ secret = Math.floor(Math.random()*20)+1; document.getElementById('guessResult').textContent = "Secret reset — try again!"; }
+
+/* --- Quick Calculation --- */
+let calcA = Math.floor(Math.random()*50)+1;
+let calcB = Math.floor(Math.random()*50)+1;
+function setCalc(){
+  calcA = Math.floor(Math.random()*50)+1;
+  calcB = Math.floor(Math.random()*50)+1;
+  document.getElementById('calcQ').textContent = `${calcA} + ${calcB} = ?`;
+  document.getElementById('calcAns').value = '';
+  document.getElementById('calcResult').textContent = '';
+}
+function checkCalc(){
+  const ans = Number(document.getElementById('calcAns').value);
+  const out = document.getElementById('calcResult');
+  if(ans === calcA + calcB) out.textContent = "✅ Correct!";
+  else out.textContent = `❌ Wrong — correct is ${calcA + calcB}`;
+}
+function newCalc(){ setCalc(); }
+
+/* --- Reaction Time --- */
+let reactTimeout=null;
+let reactStart=null;
+let reactGoTime=null;
+function startReaction(){
+  // disable stop until GO shown, and random delay
+  document.getElementById('reactionResult').textContent = "Get ready... Wait for GO";
+  document.getElementById('reactStop').disabled = true;
+  if(reactTimeout) clearTimeout(reactTimeout);
+  const delay = 800 + Math.floor(Math.random()*2000); // 0.8s - 2.8s
+  reactTimeout = setTimeout(()=> {
+    reactGoTime = Date.now();
+    document.getElementById('reactionResult').textContent = "GO! Press Stop!";
+    document.getElementById('reactStop').disabled = false;
+  }, delay);
+}
+function stopReaction(){
+  if(!reactGoTime){
+    document.getElementById('reactionResult').textContent = "You clicked too early or didn't start. Press Start and wait for GO.";
+    if(reactTimeout){ clearTimeout(reactTimeout); reactTimeout = null; }
+    reactGoTime = null;
+    document.getElementById('reactStop').disabled = true;
+    return;
+  }
+  const delta = Date.now() - reactGoTime;
+  document.getElementById('reactionResult').textContent = `⚡ Your reaction time: ${delta} ms`;
+  reactGoTime = null;
+  document.getElementById('reactStop').disabled = true;
+}
+function resetReaction(){
+  if(reactTimeout) clearTimeout(reactTimeout);
+  reactGoTime = null;
+  document.getElementById('reactionResult').textContent = "Reset. Press Start when ready.";
+  document.getElementById('reactStop').disabled = true;
+}
+
+/* --- Periodic Table Finder (40 elements) --- */
+const elements = [
+  ["H","Hydrogen"],["He","Helium"],["Li","Lithium"],["Be","Beryllium"],["B","Boron"],["C","Carbon"],["N","Nitrogen"],["O","Oxygen"],["F","Fluorine"],["Ne","Neon"],
+  ["Na","Sodium"],["Mg","Magnesium"],["Al","Aluminium"],["Si","Silicon"],["P","Phosphorus"],["S","Sulfur"],["Cl","Chlorine"],["Ar","Argon"],["K","Potassium"],["Ca","Calcium"],
+  ["Sc","Scandium"],["Ti","Titanium"],["V","Vanadium"],["Cr","Chromium"],["Mn","Manganese"],["Fe","Iron"],["Co","Cobalt"],["Ni","Nickel"],["Cu","Copper"],["Zn","Zinc"],
+  ["Ga","Gallium"],["Ge","Germanium"],["As","Arsenic"],["Se","Selenium"],["Br","Bromine"],["Kr","Krypton"],["Rb","Rubidium"],["Sr","Strontium"],["Ag","Silver"],["Au","Gold"]
+];
+let currentElementName = "";
+function refreshElement(){
+  const idx = Math.floor(Math.random()*elements.length);
+  const pair = elements[idx];
+  currentElementName = pair[1];
+  document.getElementById('elementQ').textContent = `Which element has the symbol "${pair[0]}"?`;
+  // build 3 options including correct + 2 random
+  let opts = [pair[1]];
+  while(opts.length < 3){
+    const r = elements[Math.floor(Math.random()*elements.length)][1];
+    if(!opts.includes(r)) opts.push(r);
+  }
+  opts = shuffleArray(opts);
+  const container = document.getElementById('elementOptions');
+  container.innerHTML = opts.map(o=> `<button class="opt" onclick="checkElement('${o}')">${o}</button>`).join('');
+  document.getElementById('elementResult').textContent = '';
+  document.getElementById('elementInfo').textContent = '';
+}
+function checkElement(choice){
+  const out = document.getElementById('elementResult');
+  if(choice === currentElementName){
+    out.textContent = `✅ Correct — ${choice}`;
+    document.getElementById('elementInfo').textContent = 'Nice! Learn symbol-element pairs to remember periodic trends.';
+  } else {
+    out.textContent = `❌ Wrong — correct answer is ${currentElementName}`;
+    document.getElementById('elementInfo').textContent = 'Tip: Try to group elements by their chemical families.';
+  }
+}
+refreshElement(); // initial
+
+/* --- Social Science Game: Country-Capital Match --- */
+const countries = [
+  ["India","New Delhi"],["USA","Washington D.C."],["France","Paris"],["Japan","Tokyo"],["China","Beijing"],
+  ["Russia","Moscow"],["UK","London"],["Germany","Berlin"],["Canada","Ottawa"],["Australia","Canberra"],
+  ["Nepal","Kathmandu"],["Sri Lanka","Colombo"],["Brazil","Brasilia"],["South Africa","Pretoria"],["Italy","Rome"],
+  ["Spain","Madrid"],["Mexico","Mexico City"],["Egypt","Cairo"],["Turkey","Ankara"],["UAE","Abu Dhabi"]
+];
+let currentCapital = "";
+function refreshCountry(){
+  const idx = Math.floor(Math.random()*countries.length);
+  const pair = countries[idx];
+  currentCapital = pair[1];
+  document.getElementById('countryQ').textContent = `What is the capital of ${pair[0]}?`;
+  let opts = [pair[1]];
+  while(opts.length < 3){
+    const r = countries[Math.floor(Math.random()*countries.length)][1];
+    if(!opts.includes(r)) opts.push(r);
+  }
+  opts = shuffleArray(opts);
+  document.getElementById('countryOptions').innerHTML = opts.map(o=> `<button class="opt" onclick="checkCountry('${o}')">${o}</button>`).join('');
+  document.getElementById('countryResult').textContent = '';
+  document.getElementById('countryInfo').textContent = '';
+}
+function checkCountry(choice){
+  const out = document.getElementById('countryResult');
+  if(choice === currentCapital){
+    out.textContent = `✅ Correct — ${choice}`;
+    document.getElementById('countryInfo').textContent = 'Great! Knowing capitals helps with geography and current-events awareness.';
+  } else {
+    out.textContent = `❌ Wrong — correct is ${currentCapital}`;
+    document.getElementById('countryInfo').textContent = 'Tip: relate capitals with landmarks or map locations to remember.';
+  }
+}
+refreshCountry(); // initial
+
+/* Ensure quiz containers are loaded initially (in case DOM ready) */
+window.addEventListener('DOMContentLoaded', ()=> {
+  ['science','math','social','english'].forEach(s => loadQuizCard(s));
+  setCalc();
+  resetReaction();
+});
+  </script>
+</body>
+</html>
+```
