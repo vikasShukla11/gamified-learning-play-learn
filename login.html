@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Interstellar Login & Signup</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
+    body{
+      height:100vh;display:flex;align-items:center;justify-content:center;
+      background:#000;overflow:hidden;color:#fff;
+    }
+
+    /* ---------- STAR FIELD ---------- */
+    .stars{
+      position:absolute;width:200%;height:200%;background:transparent;
+      background:radial-gradient(ellipse at center,rgba(255,255,255,0.8) 2px,transparent 3px) repeat;
+      background-size:50px 50px;
+      animation:starMove 100s linear infinite;
+      z-index:-3;
+    }
+    @keyframes starMove{
+      from{transform:translateY(0);}
+      to{transform:translateY(-200px);}
+    }
+
+    /* ---------- BLACKHOLE / WORMHOLE ---------- */
+    .wormhole{
+      position:absolute;width:200%;height:200%;
+      background:conic-gradient(from 0deg,#000,#1a1a3a,#000,#0a0a0a,#000);
+      border-radius:50%;filter:blur(80px) brightness(1.4);
+      animation:rotate 25s linear infinite;
+      z-index:-2;
+    }
+    @keyframes rotate{100%{transform:rotate(360deg);}}
+
+    /* ---------- Container ---------- */
+    .container{
+      width:400px;padding:40px;border-radius:20px;
+      background:rgba(255,255,255,0.05);backdrop-filter:blur(25px);
+      border:1px solid rgba(255,255,255,0.2);
+      box-shadow:0 0 50px rgba(0,255,255,0.4),0 0 80px rgba(255,0,124,0.3);
+      text-align:center;
+      z-index:10;
+      transform-style:preserve-3d;
+    }
+
+    .container h2{
+      margin-bottom:20px;font-size:28px;letter-spacing:1.5px;
+      text-shadow:0 0 15px #00ffe7,0 0 30px #ff007c;
+    }
+
+    .form-group{margin:18px 0;position:relative;}
+    .form-group input{
+      width:100%;padding:14px 50px 14px 15px;border:none;border-radius:12px;
+      background:rgba(255,255,255,0.08);color:#fff;font-size:16px;outline:none;
+    }
+    .form-group input:focus{box-shadow:0 0 20px #00ffe7;}
+
+    .toggle-password{
+      position:absolute;right:15px;top:50%;transform:translateY(-50%);
+      cursor:pointer;font-size:20px;color:#00ffe7;
+    }
+
+    button{
+      width:100%;padding:14px;margin-top:18px;
+      background:linear-gradient(45deg,#ff007c,#00ffe7,#7000ff);
+      border:none;border-radius:12px;color:#fff;font-size:18px;
+      font-weight:bold;cursor:pointer;transition:0.4s;
+    }
+    button:hover{transform:scale(1.05);box-shadow:0 0 25px #00ffe7;}
+
+    .switch{margin-top:20px;font-size:14px;}
+    .switch a{color:#00ffe7;cursor:pointer;font-weight:bold;}
+  </style>
+</head>
+<body>
+  <div class="stars"></div>
+  <div class="wormhole"></div>
+
+  <div class="container">
+    <h2 id="form-title">Login</h2>
+
+    <form id="login-form">
+      <div class="form-group">
+        <input type="email" placeholder="Email" required />
+      </div>
+      <div class="form-group">
+        <input type="password" id="login-pass" placeholder="Password" required />
+        <span class="toggle-password" onclick="togglePass('login-pass')">👁</span>
+      </div>
+      <button type="submit">Login</button>
+      <div class="switch">Don't have an account? <a onclick="switchForm()">Sign Up</a></div>
+    </form>
+
+    <form id="signup-form" style="display:none;">
+      <div class="form-group">
+        <input type="text" placeholder="Full Name" required />
+      </div>
+      <div class="form-group">
+        <input type="email" placeholder="Email" required />
+      </div>
+      <div class="form-group">
+        <input type="password" id="signup-pass" placeholder="Password" required />
+        <span class="toggle-password" onclick="togglePass('signup-pass')">👁</span>
+      </div>
+      <button type="submit">Sign Up</button>
+      <div class="switch">Already have an account? <a onclick="switchForm()">Login</a></div>
+    </form>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script>
+    function togglePass(id){
+      const input=document.getElementById(id);
+      input.type=input.type==="password"?"text":"password";
+    }
+
+    function switchForm(){
+      const login=document.getElementById("login-form");
+      const signup=document.getElementById("signup-form");
+      const title=document.getElementById("form-title");
+
+      if(login.style.display==="none"){
+        gsap.to(signup,{opacity:0,y:50,duration:0.6,onComplete:()=>{
+          signup.style.display="none";
+          login.style.display="block";
+          title.innerText="Login";
+          gsap.fromTo(login,{opacity:0,y:-50},{opacity:1,y:0,duration:1,ease:"power4.out"});
+        }});
+      } else {
+        gsap.to(login,{opacity:0,y:-50,duration:0.6,onComplete:()=>{
+          login.style.display="none";
+          signup.style.display="block";
+          title.innerText="Sign Up";
+          gsap.fromTo(signup,{opacity:0,y:50},{opacity:1,y:0,duration:1,ease:"power4.out"});
+        }});
+      }
+    }
+
+    // NEW JAVASCRIPT: Handle signup and redirect with name
+    document.getElementById('signup-form').addEventListener('submit', (event) => {
+      event.preventDefault(); // Prevents the form from submitting normally
+      
+      const fullName = document.querySelector('#signup-form input[type="text"]').value;
+
+      // Saves the full name to the browser's local storage
+      localStorage.setItem('userName', fullName);
+
+      // Redirects to the gamified learning page
+       window.location.href = "index44.html";
+    });
+
+    // Entrance
+    window.onload=()=>{
+      gsap.fromTo(".container",{scale:0.5,opacity:0,rotateY:90},{scale:1,opacity:1,rotateY:0,duration:1.5,ease:"elastic.out(1,0.5)"});
+      gsap.fromTo("#login-form",{opacity:0,y:40},{opacity:1,y:0,duration:1,delay:0.5,ease:"power3.out"});
+    };
+  </script>
+</body>
+</html>
