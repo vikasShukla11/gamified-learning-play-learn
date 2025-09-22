@@ -6,6 +6,109 @@
   <title>Subjects Adventure Hub</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+    }
+
+    /* Sidebar Menu */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -220px; /* hidden by default */
+      width: 220px;
+      height: 100%;
+      background: #0b2136;
+      padding-top: 60px;
+      transition: left 0.3s ease;
+      z-index: 1000;
+    }
+    .sidebar.active {
+      left: 0;
+    }
+    .sidebar button {
+      display: block;
+      width: 80%;
+      margin: 15px auto;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #0d6efd;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .sidebar button:hover {
+      background: #0b5ed7;
+    }
+
+    /* Menu Toggle Button */
+    #menuBtn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: #0d6efd;
+      border: none;
+      color: #fff;
+      padding: 10px 14px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 1100;
+    }
+    #menuBtn:hover {
+      background: #0b5ed7;
+    }
+    body {
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+}
+
+textarea {
+  width: 80%;
+  height: 80px;
+  margin: 10px;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 16px;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #0d6efd;
+  color: white;
+  font-size: 16px;
+}
+
+button:hover {
+  background: #0b5ed7;
+}
+
+#response {
+  margin-top: 20px;
+  white-space: pre-wrap;
+  background: #222;
+  padding: 15px;
+  border-radius: 10px;
+  max-width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 15px;
+  text-align: left;
+}
     /* Base / theme kept consistent with previous design (soft blue gradient, curved cards) */
     :root{
       --primary:#007bff;
@@ -80,6 +183,13 @@ input[type=number]{padding:8px;border-radius:8px;border:1px solid rgba(3,12,30,0
   </header>
 
   <main>
+      <div class="sidebar" id="sidebar">
+    <button onclick="goHome()">🏠 Home</button>
+    <button onclick="goLearning()">📖 Learning</button>
+  </div>
+
+  <!-- Toggle Button -->
+  <button id="menuBtn" onclick="toggleMenu()">☰ Menu</button>
     <!-- ========== SCIENCE QUIZ ========== -->
     <div class="section-title">🔬 Science Adventure</div>
     <div id="scienceCard" class="card"></div>
@@ -177,6 +287,10 @@ input[type=number]{padding:8px;border-radius:8px;border:1px solid rgba(3,12,30,0
     </div>
 
     <div class="footer-note">Keep playing & learning — small daily practice builds strong foundations.</div>
+    <h2>🚀 My AI Chatbot</h2>
+  <textarea id="userInput" placeholder="Type your question..."></textarea><br>
+  <button onclick="askAI()">Send</button>
+  <div id="response"></div>
   </main>
 
   <script>
@@ -450,7 +564,41 @@ window.addEventListener('DOMContentLoaded', ()=> {
   setCalc();
   resetReaction();
 });
+    async function askAI() {
+  const userMessage = document.getElementById("userInput").value;
+
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer YOUR_API_KEY" // <- yaha apni API key paste karo
+    },
+    body: JSON.stringify({
+      model: "gpt-3.5-turbo", // ya gpt-4/gpt-5 agar available hai
+      messages: [{ role: "user", content: userMessage }]
+    })
+  });
+
+  const data = await response.json();
+  document.getElementById("response").innerText =
+    data.choices[0].message.content;
+}
+     /* Sidebar Toggle */
+    function toggleMenu() {
+      document.getElementById("sidebar").classList.toggle("active");
+    }
+
+    function goHome() {
+      alert("Navigating to Home Page!");
+      // window.location.href = "index.html"; // if you have a home page
+    }
+
+    function goLearning() {
+      alert("Navigating to Learning Page!");
+      // window.location.href = "learning.html"; // if you have a learning page
+    }
   </script>
 </body>
 </html>
 ```
+
